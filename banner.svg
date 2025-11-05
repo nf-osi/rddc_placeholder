@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200">
+  <defs>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5aa3f0;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="helixGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#5aa3f0;stop-opacity:0.3" />
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background elements - DNA helix inspired -->
+  <g opacity="0.15">
+    <!-- Left helix -->
+    <path d="M 50 30 Q 70 50, 50 70 T 50 110 T 50 150 T 50 190"
+          stroke="#4a90e2" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M 90 30 Q 70 50, 90 70 T 90 110 T 90 150 T 90 190"
+          stroke="#5aa3f0" stroke-width="2" fill="none" opacity="0.6"/>
+
+    <!-- Connection lines -->
+    <line x1="50" y1="30" x2="90" y2="30" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="50" y1="70" x2="90" y2="70" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="50" y1="110" x2="90" y2="110" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="50" y1="150" x2="90" y2="150" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="50" y1="190" x2="90" y2="190" stroke="url(#helixGradient)" stroke-width="1.5"/>
+
+    <!-- Nodes -->
+    <circle cx="50" cy="30" r="3" fill="#4a90e2"/>
+    <circle cx="90" cy="30" r="3" fill="#5aa3f0"/>
+    <circle cx="50" cy="70" r="3" fill="#4a90e2"/>
+    <circle cx="90" cy="70" r="3" fill="#5aa3f0"/>
+    <circle cx="50" cy="110" r="3" fill="#4a90e2"/>
+    <circle cx="90" cy="110" r="3" fill="#5aa3f0"/>
+    <circle cx="50" cy="150" r="3" fill="#4a90e2"/>
+    <circle cx="90" cy="150" r="3" fill="#5aa3f0"/>
+
+    <!-- Right helix -->
+    <path d="M 1110 30 Q 1130 50, 1110 70 T 1110 110 T 1110 150 T 1110 190"
+          stroke="#4a90e2" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M 1150 30 Q 1130 50, 1150 70 T 1150 110 T 1150 150 T 1150 190"
+          stroke="#5aa3f0" stroke-width="2" fill="none" opacity="0.6"/>
+
+    <!-- Connection lines -->
+    <line x1="1110" y1="30" x2="1150" y2="30" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="1110" y1="70" x2="1150" y2="70" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="1110" y1="110" x2="1150" y2="110" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="1110" y1="150" x2="1150" y2="150" stroke="url(#helixGradient)" stroke-width="1.5"/>
+    <line x1="1110" y1="190" x2="1150" y2="190" stroke="url(#helixGradient)" stroke-width="1.5"/>
+
+    <!-- Nodes -->
+    <circle cx="1110" cy="30" r="3" fill="#4a90e2"/>
+    <circle cx="1150" cy="30" r="3" fill="#5aa3f0"/>
+    <circle cx="1110" cy="70" r="3" fill="#4a90e2"/>
+    <circle cx="1150" cy="70" r="3" fill="#5aa3f0"/>
+    <circle cx="1110" cy="110" r="3" fill="#4a90e2"/>
+    <circle cx="1150" cy="110" r="3" fill="#5aa3f0"/>
+    <circle cx="1110" cy="150" r="3" fill="#4a90e2"/>
+    <circle cx="1150" cy="150" r="3" fill="#5aa3f0"/>
+  </g>
+
+  <!-- Data nodes pattern -->
+  <g opacity="0.2">
+    <circle cx="200" cy="40" r="4" fill="#4a90e2" filter="url(#glow)"/>
+    <circle cx="240" cy="60" r="3" fill="#5aa3f0"/>
+    <circle cx="220" cy="80" r="3.5" fill="#4a90e2"/>
+
+    <circle cx="980" cy="40" r="4" fill="#5aa3f0" filter="url(#glow)"/>
+    <circle cx="960" cy="60" r="3" fill="#4a90e2"/>
+    <circle cx="1000" cy="80" r="3.5" fill="#5aa3f0"/>
+
+    <line x1="200" y1="40" x2="240" y2="60" stroke="#4a90e2" stroke-width="1" opacity="0.4"/>
+    <line x1="240" y1="60" x2="220" y2="80" stroke="#5aa3f0" stroke-width="1" opacity="0.4"/>
+
+    <line x1="980" y1="40" x2="960" y2="60" stroke="#5aa3f0" stroke-width="1" opacity="0.4"/>
+    <line x1="960" y1="60" x2="1000" y2="80" stroke="#4a90e2" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- Main text -->
+  <text x="600" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+        font-size="52" font-weight="700" text-anchor="middle"
+        fill="url(#textGradient)" filter="url(#glow)" letter-spacing="2">
+    Rare Disease Data Commons
+  </text>
+
+  <!-- Subtitle accent line -->
+  <line x1="400" y1="130" x2="800" y2="130" stroke="url(#textGradient)" stroke-width="2" opacity="0.4"/>
+
+  <!-- Subtitle text -->
+  <text x="600" y="155" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif"
+        font-size="16" font-weight="300" text-anchor="middle"
+        fill="#b8c5d6" letter-spacing="3" opacity="0.8">
+    ADVANCING RESEARCH THROUGH COLLABORATIVE DATA
+  </text>
+</svg>
