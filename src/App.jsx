@@ -9,17 +9,6 @@ function App() {
         Skip to main content
       </a>
 
-      {/* Header */}
-      <header className="header">
-        <div className="container">
-          <nav className="nav" role="navigation" aria-label="Main navigation">
-            <a href="/" className="logo">
-              <span className="logo-accent">RDC</span> Data Commons
-            </a>
-          </nav>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main id="main">
         {/* Hero Section */}

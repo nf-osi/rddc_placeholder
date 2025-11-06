@@ -45,8 +45,8 @@ function NetworkBackground() {
         x: Math.random() * width,
         y: Math.random() * height,
         id: i,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: (Math.random() - 0.5) * 0.8
       })
     }
 
@@ -139,17 +139,20 @@ function NetworkBackground() {
 
       // Update node positions
       nodes.forEach(node => {
-        if (node.x <= 0 || node.x >= width) node.vx *= -1
-        if (node.y <= 0 || node.y >= height) node.vy *= -1
+        // Elastic bounce at edges with coefficient > 1 for bouncy effect
+        if (node.x <= 0 || node.x >= width) node.vx *= -1.15
+        if (node.y <= 0 || node.y >= height) node.vy *= -1.15
 
         node.x = Math.max(0, Math.min(width, node.x + node.vx))
         node.y = Math.max(0, Math.min(height, node.y + node.vy))
 
-        node.vx += (Math.random() - 0.5) * 0.02
-        node.vy += (Math.random() - 0.5) * 0.02
+        // Increased random drift for more motion
+        node.vx += (Math.random() - 0.5) * 0.05
+        node.vy += (Math.random() - 0.5) * 0.05
 
-        node.vx *= 0.98
-        node.vy *= 0.98
+        // Less damping for more sustained motion
+        node.vx *= 0.99
+        node.vy *= 0.99
       })
 
       // Update SVG elements
