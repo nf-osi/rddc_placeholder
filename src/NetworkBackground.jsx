@@ -1,0 +1,238 @@
+import { useEffect, useRef, useState } from 'react'
+import './NetworkBackground.css'
+
+function NetworkBackground({ useVideo = false }) {
+  const svgRef = useRef(null)
+  const edgesGroupRef = useRef(null)
+  const nodesGroupRef = useRef(null)
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const nodesRef = useRef([])
+  const edgeConnectionsRef = useRef([])
+  const frameCountRef = useRef(0)
+  const animationIdRef = useRef(null)
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    const updateDimensions = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
+
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+
+    return () => {
+      window.removeEventListener('resize', updateDimensions)
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current)
+      }
+    }
+  }, [])
+
+  // Generate nodes
+  const generateNodes = (width, height) => {
+    const numNodes = 30
+    const nodes = []
+
+    for (let i = 0; i < numNodes; i++) {
+      nodes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        id: i,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3
+      })
+    }
+
+    return nodes
+  }
+
+  // Create network
+  const createNetwork = (svg, edgesGroup, nodesGroup, nodes, width, height) => {
+    if (!svg || !edgesGroup || !nodesGroup) return
+
+    // Clear existing
+    edgesGroup.innerHTML = ''
+    nodesGroup.innerHTML = ''
+    const edgeConnections = []
+
+    const maxConnections = 6
+    const connections = new Set()
+    const maxDistance = Math.min(width, height) * 0.4
+
+    nodes.forEach((node, i) => {
+      const distances = nodes
+        .map((other, j) => ({
+          node: other,
+          index: j,
+          distance: Math.sqrt(
+            Math.pow(node.x - other.x, 2) + Math.pow(node.y - other.y, 2)
+          )
+        }))
+        .filter(d => d.index !== i && d.distance <= maxDistance)
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, maxConnections)
+
+      distances.forEach(({ node: other, index: j }) => {
+        const edgeId = i < j ? `${i}-${j}` : `${j}-${i}`
+        if (!connections.has(edgeId)) {
+          connections.add(edgeId)
+
+          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+          edge.setAttribute('class', 'network-edge')
+          edge.setAttribute('x1', node.x)
+          edge.setAttribute('y1', node.y)
+          edge.setAttribute('x2', other.x)
+          edge.setAttribute('y2', other.y)
+          edgesGroup.appendChild(edge)
+
+          edgeConnections.push({ node1: i, node2: j })
+        }
+      })
+    })
+
+    nodes.forEach((node, i) => {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+      circle.setAttribute('class', 'network-node')
+      circle.setAttribute('cx', node.x)
+      circle.setAttribute('cy', node.y)
+      circle.setAttribute('r', 8)
+      circle.setAttribute('style', `--node-index: ${i}`)
+      nodesGroup.appendChild(circle)
+    })
+
+    return edgeConnections
+  }
+
+  // Animation loop
+  useEffect(() => {
+    if (dimensions.width === 0 || dimensions.height === 0) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const svg = svgRef.current
+    const edgesGroup = edgesGroupRef.current
+    const nodesGroup = nodesGroupRef.current
+
+    if (!svg || !edgesGroup || !nodesGroup) return
+
+    // Initialize nodes
+    nodesRef.current = generateNodes(dimensions.width, dimensions.height)
+    edgeConnectionsRef.current = createNetwork(
+      svg,
+      edgesGroup,
+      nodesGroup,
+      nodesRef.current,
+      dimensions.width,
+      dimensions.height
+    )
+
+    const updateNetwork = () => {
+      frameCountRef.current++
+      const nodes = nodesRef.current
+      const { width, height } = dimensions
+
+      // Update node positions
+      nodes.forEach(node => {
+        if (node.x <= 0 || node.x >= width) node.vx *= -1
+        if (node.y <= 0 || node.y >= height) node.vy *= -1
+
+        node.x = Math.max(0, Math.min(width, node.x + node.vx))
+        node.y = Math.max(0, Math.min(height, node.y + node.vy))
+
+        node.vx += (Math.random() - 0.5) * 0.02
+        node.vy += (Math.random() - 0.5) * 0.02
+
+        node.vx *= 0.98
+        node.vy *= 0.98
+      })
+
+      // Update SVG elements
+      const nodeElements = nodesGroup.querySelectorAll('circle')
+      nodeElements.forEach((circle, i) => {
+        if (nodes[i]) {
+          circle.setAttribute('cx', nodes[i].x)
+          circle.setAttribute('cy', nodes[i].y)
+        }
+      })
+
+      // Recreate network every 30 frames
+      if (frameCountRef.current % 30 === 0) {
+        edgeConnectionsRef.current = createNetwork(
+          svg,
+          edgesGroup,
+          nodesGroup,
+          nodes,
+          width,
+          height
+        )
+      } else {
+        // Update edge positions
+        const edgeElements = edgesGroup.querySelectorAll('line')
+        edgeConnectionsRef.current.forEach((edge, index) => {
+          if (index < edgeElements.length && edge.node1 !== undefined && edge.node2 !== undefined) {
+            const line = edgeElements[index]
+            line.setAttribute('x1', nodes[edge.node1].x)
+            line.setAttribute('y1', nodes[edge.node1].y)
+            line.setAttribute('x2', nodes[edge.node2].x)
+            line.setAttribute('y2', nodes[edge.node2].y)
+          }
+        })
+      }
+
+      animationIdRef.current = requestAnimationFrame(updateNetwork)
+    }
+
+    updateNetwork()
+
+    return () => {
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current)
+      }
+    }
+  }, [dimensions])
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return null
+  }
+
+  // Render video background if requested
+  if (useVideo) {
+    return (
+      <div className="background-animation">
+        <video
+          className="network-video"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/Knowledge_Graph_Animation_for_Landing_Page.mp4" type="video/mp4" />
+        </video>
+      </div>
+    )
+  }
+
+  // Render SVG animation
+  return (
+    <div className="background-animation">
+      <svg
+        ref={svgRef}
+        className="network-svg"
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        width={dimensions.width}
+        height={dimensions.height}
+      >
+        <g ref={edgesGroupRef} className="network-edges"></g>
+        <g ref={nodesGroupRef} className="network-nodes"></g>
+      </svg>
+    </div>
+  )
+}
+
+export default NetworkBackground

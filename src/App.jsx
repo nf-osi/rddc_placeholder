@@ -1,8 +1,13 @@
 import './App.css'
+import NetworkBackground from './NetworkBackground'
 
 function App() {
   return (
     <div className="app">
+      {/* Animated knowledge graph background
+          - Default: SVG animation (coded version)
+          - To use video: <NetworkBackground useVideo={true} /> */}
+      <NetworkBackground />
       <a href="#main" className="skip-to-main">
         Skip to main content
       </a>
