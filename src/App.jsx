@@ -38,25 +38,14 @@ function App() {
               <h2 id="cta-title" className="cta-title">
                 Join Us in Transforming Rare Disease Research
               </h2>
-              <p className="cta-description">
-                Stay updated on our progress and be the first to know when we launch.
-              </p>
               <div className="cta-actions">
                 <a
                   href="mailto:hi@rdc.bio"
                   className="button button-primary email-link"
                   aria-label="Send email to hi@rdc.bio"
                 >
-                  <span aria-hidden="true">✉️</span> hi@rdc.bio
+                  hi@rdc.bio
                 </a>
-                <button
-                  className="button button-secondary"
-                  aria-label="Sign up for newsletter (coming soon)"
-                  disabled
-                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                >
-                  Newsletter Signup (Coming Soon)
-                </button>
               </div>
             </div>
           </div>
