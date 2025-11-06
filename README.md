@@ -59,6 +59,148 @@ The optimized build will be in the `dist` directory.
 npm run preview
 ```
 
+## Deployment to GitHub Pages
+
+GitHub Pages is a free and simple way to host your static site directly from a GitHub repository.
+
+### Prerequisites
+
+- A GitHub account
+- Your project pushed to a GitHub repository
+
+### Setup Steps
+
+1. **Update `vite.config.js` with your repository base path:**
+
+   ```javascript
+   import { defineConfig } from 'vite'
+   import react from '@vitejs/plugin-react'
+
+   export default defineConfig({
+     plugins: [react()],
+     base: '/your-repo-name/', // Replace with your repository name
+     build: {
+       outDir: 'dist',
+       assetsDir: 'assets',
+     },
+   })
+   ```
+
+   For example, if your repo is `https://github.com/username/rddc_placeholder`, set `base: '/rddc_placeholder/'`
+
+2. **Build the project:**
+
+   ```bash
+   npm run build
+   ```
+
+3. **Deploy using one of these methods:**
+
+   #### Option A: Using gh-pages package (Recommended)
+
+   ```bash
+   # Install gh-pages
+   npm install --save-dev gh-pages
+
+   # Add deploy script to package.json
+   # Add this to the "scripts" section:
+   # "deploy": "npm run build && gh-pages -d dist"
+
+   # Deploy
+   npm run deploy
+   ```
+
+   #### Option B: Manual deployment
+
+   ```bash
+   # Push the dist folder to gh-pages branch
+   git add dist -f
+   git commit -m "Deploy to GitHub Pages"
+   git subtree push --prefix dist origin gh-pages
+   ```
+
+   #### Option C: GitHub Actions (Automated)
+
+   Create `.github/workflows/deploy.yml`:
+
+   ```yaml
+   name: Deploy to GitHub Pages
+
+   on:
+     push:
+       branches: [ main ]
+     workflow_dispatch:
+
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+           with:
+             node-version: '20'
+         - run: npm ci
+         - run: npm run build
+         - uses: actions/upload-pages-artifact@v3
+           with:
+             path: './dist'
+
+     deploy:
+       needs: build
+       runs-on: ubuntu-latest
+       environment:
+         name: github-pages
+         url: ${{ steps.deployment.outputs.page_url }}
+       steps:
+         - uses: actions/deploy-pages@v4
+           id: deployment
+   ```
+
+4. **Configure GitHub Pages in your repository:**
+
+   - Go to your repository on GitHub
+   - Click **Settings** > **Pages**
+   - Under "Source", select:
+     - **Branch**: `gh-pages` (for Options A & B) or `GitHub Actions` (for Option C)
+     - **Folder**: `/ (root)`
+   - Click **Save**
+
+5. **Access your site:**
+
+   Your site will be available at:
+   ```
+   https://username.github.io/your-repo-name/
+   ```
+
+### Updating the Deployment
+
+For Option A (gh-pages):
+```bash
+npm run deploy
+```
+
+For Option B (manual):
+```bash
+npm run build
+git add dist -f
+git commit -m "Update GitHub Pages"
+git subtree push --prefix dist origin gh-pages
+```
+
+For Option C (GitHub Actions):
+Just push to the main branch and the action will automatically deploy.
+
+### Troubleshooting
+
+- **404 errors**: Make sure the `base` in `vite.config.js` matches your repository name
+- **Assets not loading**: Verify that all asset paths are relative or use the correct base path
+- **Page not updating**: Clear your browser cache and check if the gh-pages branch was updated
+
 ## Deployment to EC2
 
 ### Option 1: Serve with Nginx (Recommended)

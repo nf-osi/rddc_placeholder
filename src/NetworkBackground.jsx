@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './NetworkBackground.css'
 
-function NetworkBackground({ useVideo = false }) {
+function NetworkBackground() {
   const svgRef = useRef(null)
   const edgesGroupRef = useRef(null)
   const nodesGroupRef = useRef(null)
@@ -201,24 +201,6 @@ function NetworkBackground({ useVideo = false }) {
     return null
   }
 
-  // Render video background if requested
-  if (useVideo) {
-    return (
-      <div className="background-animation">
-        <video
-          className="network-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          <source src="/Knowledge_Graph_Animation_for_Landing_Page.mp4" type="video/mp4" />
-        </video>
-      </div>
-    )
-  }
-
-  // Render SVG animation
   return (
     <div className="background-animation">
       <svg

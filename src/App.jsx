@@ -4,9 +4,6 @@ import NetworkBackground from './NetworkBackground'
 function App() {
   return (
     <div className="app">
-      {/* Animated knowledge graph background
-          - Default: SVG animation (coded version)
-          - To use video: <NetworkBackground useVideo={true} /> */}
       <NetworkBackground />
       <a href="#main" className="skip-to-main">
         Skip to main content
@@ -41,115 +38,6 @@ function App() {
                 cut the diagnostic odyssey in half for people living with rare or
                 undiagnosed conditions.
               </p>
-              <div className="hero-actions">
-                <a href="#contact" className="button button-primary">
-                  Get Updates
-                </a>
-                <a href="#mission" className="button button-secondary">
-                  Learn More
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="stats" aria-label="Key statistics">
-          <div className="container">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-value">50%</div>
-                <div className="stat-label">Reduction in diagnostic time</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-value">400M+</div>
-                <div className="stat-label">People with rare diseases worldwide</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-value">10,000+</div>
-                <div className="stat-label">Known rare diseases</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Mission Section */}
-        <section id="mission" className="mission" aria-labelledby="mission-title">
-          <div className="container">
-            <div className="mission-content">
-              <h2 id="mission-title" className="section-title">
-                Our Mission
-              </h2>
-              <p className="mission-text">
-                The journey to diagnosis for rare disease patients often takes years,
-                involving countless specialists and tests. We're changing that by creating
-                a unified, AI-ready data commons that brings together researchers, clinicians,
-                data scientists, and AI innovators.
-              </p>
-              <p className="mission-text">
-                By democratizing access to high-quality rare disease data, we're
-                accelerating discovery and bringing hope to millions of families
-                seeking answers.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="features" aria-labelledby="features-title">
-          <div className="container">
-            <h2 id="features-title" className="section-title" style={{ textAlign: 'center' }}>
-              Built for the Future
-            </h2>
-            <div className="features-grid">
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">🧬</div>
-                <h3 className="feature-title">Comprehensive Data</h3>
-                <p className="feature-description">
-                  Integrating genomic, clinical, and phenotypic data from diverse
-                  sources to create a holistic view of rare diseases.
-                </p>
-              </article>
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">🤖</div>
-                <h3 className="feature-title">AI-Ready Infrastructure</h3>
-                <p className="feature-description">
-                  Purpose-built for machine learning and AI research, enabling
-                  breakthrough discoveries in diagnosis and treatment.
-                </p>
-              </article>
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">🔐</div>
-                <h3 className="feature-title">Secure & Compliant</h3>
-                <p className="feature-description">
-                  Privacy-first architecture ensuring patient data protection while
-                  enabling collaborative research.
-                </p>
-              </article>
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">🌐</div>
-                <h3 className="feature-title">Open Collaboration</h3>
-                <p className="feature-description">
-                  Fostering a global community of researchers, clinicians, and
-                  patients working together toward better outcomes.
-                </p>
-              </article>
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">⚡</div>
-                <h3 className="feature-title">High Performance</h3>
-                <p className="feature-description">
-                  Lightning-fast data access and analysis tools designed for
-                  large-scale computational research.
-                </p>
-              </article>
-              <article className="feature-card">
-                <div className="feature-icon" aria-hidden="true">📊</div>
-                <h3 className="feature-title">Rich Analytics</h3>
-                <p className="feature-description">
-                  Advanced visualization and analysis capabilities to uncover
-                  patterns and accelerate insights.
-                </p>
-              </article>
             </div>
           </div>
         </section>
