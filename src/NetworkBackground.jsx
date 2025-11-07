@@ -10,6 +10,7 @@ function NetworkBackground() {
   const edgeConnectionsRef = useRef([])
   const frameCountRef = useRef(0)
   const animationIdRef = useRef(null)
+  const lastNodeToggleRef = useRef(0)
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -41,15 +42,17 @@ function NetworkBackground() {
     const nodes = []
 
     for (let i = 0; i < numNodes; i++) {
+      const isVisible = Math.random() > 0.3
       nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
         id: i,
         vx: (Math.random() - 0.5) * 0.8,
         vy: (Math.random() - 0.5) * 0.8,
-        opacity: Math.random(),
-        targetOpacity: Math.random() > 0.5 ? 1 : 0.3,
-        opacitySpeed: 0.005 + Math.random() * 0.01
+        opacity: isVisible ? 1 : 0,
+        targetOpacity: isVisible ? 1 : 0,
+        isAppearing: false,
+        isDisappearing: false
       })
     }
 
@@ -124,8 +127,9 @@ function NetworkBackground() {
 
     if (!svg || !edgesGroup || !nodesGroup) return
 
-    // Initialize nodes
+    // Initialize nodes and timing
     nodesRef.current = generateNodes(dimensions.width, dimensions.height)
+    lastNodeToggleRef.current = Date.now()
     edgeConnectionsRef.current = createNetwork(
       svg,
       edgesGroup,
@@ -139,8 +143,31 @@ function NetworkBackground() {
       frameCountRef.current++
       const nodes = nodesRef.current
       const { width, height } = dimensions
+      const currentTime = Date.now()
 
-      // Update node positions
+      // Every 3 seconds, toggle a random node's visibility
+      if (currentTime - lastNodeToggleRef.current >= 3000) {
+        lastNodeToggleRef.current = currentTime
+
+        // Pick a random node
+        const randomIndex = Math.floor(Math.random() * nodes.length)
+        const node = nodes[randomIndex]
+
+        // Toggle between appearing and disappearing
+        if (node.opacity > 0.5) {
+          // Node is visible, make it disappear
+          node.isDisappearing = true
+          node.isAppearing = false
+          node.targetOpacity = 0
+        } else {
+          // Node is invisible, make it appear
+          node.isAppearing = true
+          node.isDisappearing = false
+          node.targetOpacity = 1
+        }
+      }
+
+      // Update node positions and opacity
       nodes.forEach(node => {
         // Elastic bounce at edges with coefficient > 1 for bouncy effect
         if (node.x <= 0 || node.x >= width) node.vx *= -1.15
@@ -157,14 +184,18 @@ function NetworkBackground() {
         node.vx *= 0.99
         node.vy *= 0.99
 
-        // Animate opacity - fade in/out
-        const opacityDiff = node.targetOpacity - node.opacity
-        if (Math.abs(opacityDiff) < 0.05) {
-          // Switch target when close to current target
-          node.targetOpacity = Math.random() > 0.5 ? 1 : 0.2
-        } else {
-          // Gradually move toward target opacity
-          node.opacity += opacityDiff * node.opacitySpeed
+        // Animate opacity - smooth transition to target
+        if (node.isAppearing || node.isDisappearing) {
+          const opacityDiff = node.targetOpacity - node.opacity
+          if (Math.abs(opacityDiff) < 0.01) {
+            // Reached target
+            node.opacity = node.targetOpacity
+            node.isAppearing = false
+            node.isDisappearing = false
+          } else {
+            // Move toward target - faster animation (0.03 per frame for ~1 second transition at 60fps)
+            node.opacity += opacityDiff * 0.03
+          }
         }
       })
 

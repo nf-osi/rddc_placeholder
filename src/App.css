@@ -237,7 +237,7 @@
   padding: var(--spacing-xl) var(--spacing-lg);
   border-radius: 16px;
   border: 1px solid rgba(184, 197, 214, 0.15);
-  max-width: 900px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
