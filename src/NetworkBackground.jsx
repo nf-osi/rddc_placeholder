@@ -1,204 +1,203 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import './NetworkBackground.css'
 
 function NetworkBackground() {
-  const svgRef = useRef(null)
-  const edgesGroupRef = useRef(null)
-  const nodesGroupRef = useRef(null)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const nodesRef = useRef([])
-  const edgeConnectionsRef = useRef([])
-  const frameCountRef = useRef(0)
+  const canvasRef = useRef(null)
   const animationIdRef = useRef(null)
+  const nodesRef = useRef([])
+  const timeRef = useRef(0)
 
-  // Check for reduced motion preference
   useEffect(() => {
+    // Check for reduced motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return
     }
 
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Setup canvas with device pixel ratio for crisp rendering
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = canvas.offsetWidth * dpr
+      canvas.height = canvas.offsetHeight * dpr
+      ctx.scale(dpr, dpr)
+
+      // Reinitialize nodes on resize
+      if (nodesRef.current.length === 0 || Math.abs(canvas.offsetWidth - width) > 100) {
+        width = canvas.offsetWidth
+        height = canvas.offsetHeight
+        initializeNodes()
+      }
     }
 
-    updateDimensions()
-    window.addEventListener('resize', updateDimensions)
+    let width = canvas.offsetWidth
+    let height = canvas.offsetHeight
+
+    resize()
+    window.addEventListener('resize', resize)
+
+    // Color palette - professional blue/purple gradient
+    const colors = [
+      'rgba(79, 70, 229, 0.9)',   // indigo
+      'rgba(99, 102, 241, 0.9)',  // lighter indigo
+      'rgba(124, 58, 237, 0.9)',  // purple
+    ]
+
+    const numNodes = 25
+    const connectionDistance = 200
+    const maxConnections = 5
+
+    // Initialize nodes
+    const initializeNodes = () => {
+      nodesRef.current = []
+      for (let i = 0; i < numNodes; i++) {
+        nodesRef.current.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 2 + 2.5,
+          pulseOffset: Math.random() * Math.PI * 2,
+        })
+      }
+    }
+
+    initializeNodes()
+
+    // Animation loop
+    const animate = () => {
+      width = canvas.offsetWidth
+      height = canvas.offsetHeight
+
+      // Clear with slight trail effect for smooth motion blur
+      ctx.fillStyle = 'rgba(10, 14, 26, 0.15)'
+      ctx.fillRect(0, 0, width, height)
+
+      timeRef.current += 0.008
+
+      const nodes = nodesRef.current
+
+      // Update node positions with flowing motion
+      nodes.forEach((node, i) => {
+        // Add perlin-like noise for organic movement
+        const angle = Math.sin(node.x * 0.008 + timeRef.current) *
+                     Math.cos(node.y * 0.008 + timeRef.current) * Math.PI
+        node.vx += Math.cos(angle) * 0.015
+        node.vy += Math.sin(angle) * 0.015
+
+        // Damping for smooth deceleration
+        node.vx *= 0.985
+        node.vy *= 0.985
+
+        // Update position
+        node.x += node.vx
+        node.y += node.vy
+
+        // Smooth edge wrapping
+        if (node.x < -20) node.x = width + 20
+        if (node.x > width + 20) node.x = -20
+        if (node.y < -20) node.y = height + 20
+        if (node.y > height + 20) node.y = -20
+
+        // Calculate pulse for subtle breathing effect
+        node.pulse = (Math.sin(timeRef.current * 1.5 + node.pulseOffset) + 1) / 2
+      })
+
+      // Draw connections with gradients
+      nodes.forEach((node1, i) => {
+        let connectionCount = 0
+
+        nodes.slice(i + 1).forEach((node2) => {
+          if (connectionCount >= maxConnections) return
+
+          const dx = node1.x - node2.x
+          const dy = node1.y - node2.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance < connectionDistance) {
+            connectionCount++
+
+            // Calculate opacity based on distance and pulse
+            const opacity = (1 - distance / connectionDistance) * 0.25 *
+                          (node1.pulse * 0.5 + 0.5) * (node2.pulse * 0.5 + 0.5)
+
+            // Create gradient along the connection
+            const gradient = ctx.createLinearGradient(node1.x, node1.y, node2.x, node2.y)
+            gradient.addColorStop(0, node1.color.replace('0.9', String(opacity)))
+            gradient.addColorStop(1, node2.color.replace('0.9', String(opacity)))
+
+            ctx.strokeStyle = gradient
+            ctx.lineWidth = 1.5
+            ctx.beginPath()
+            ctx.moveTo(node1.x, node1.y)
+            ctx.lineTo(node2.x, node2.y)
+            ctx.stroke()
+          }
+        })
+      })
+
+      // Draw nodes with glow effect
+      nodes.forEach((node) => {
+        const size = node.size * (0.85 + node.pulse * 0.3)
+        const glowSize = size * 4
+
+        // Outer glow
+        const glowGradient = ctx.createRadialGradient(
+          node.x, node.y, 0,
+          node.x, node.y, glowSize
+        )
+        glowGradient.addColorStop(0, node.color.replace('0.9', String(0.3 * node.pulse)))
+        glowGradient.addColorStop(0.5, node.color.replace('0.9', String(0.1 * node.pulse)))
+        glowGradient.addColorStop(1, node.color.replace('0.9', '0'))
+
+        ctx.fillStyle = glowGradient
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, glowSize, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Inner glow
+        const innerGlow = ctx.createRadialGradient(
+          node.x, node.y, 0,
+          node.x, node.y, size * 1.5
+        )
+        innerGlow.addColorStop(0, node.color)
+        innerGlow.addColorStop(1, node.color.replace('0.9', '0.3'))
+
+        ctx.fillStyle = innerGlow
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, size * 1.5, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Core
+        ctx.fillStyle = node.color
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, size, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Bright center highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, size * 0.4, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      animationIdRef.current = requestAnimationFrame(animate)
+    }
+
+    animate()
 
     return () => {
-      window.removeEventListener('resize', updateDimensions)
+      window.removeEventListener('resize', resize)
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current)
       }
     }
   }, [])
-
-  // Generate nodes
-  const generateNodes = (width, height) => {
-    const numNodes = 30
-    const nodes = []
-
-    for (let i = 0; i < numNodes; i++) {
-      nodes.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        id: i,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8
-      })
-    }
-
-    return nodes
-  }
-
-  // Create network
-  const createNetwork = (svg, edgesGroup, nodesGroup, nodes, width, height) => {
-    if (!svg || !edgesGroup || !nodesGroup) return
-
-    // Clear existing
-    edgesGroup.innerHTML = ''
-    nodesGroup.innerHTML = ''
-    const edgeConnections = []
-
-    const maxConnections = 6
-    const connections = new Set()
-    const maxDistance = Math.min(width, height) * 0.4
-
-    nodes.forEach((node, i) => {
-      const distances = nodes
-        .map((other, j) => ({
-          node: other,
-          index: j,
-          distance: Math.sqrt(
-            Math.pow(node.x - other.x, 2) + Math.pow(node.y - other.y, 2)
-          )
-        }))
-        .filter(d => d.index !== i && d.distance <= maxDistance)
-        .sort((a, b) => a.distance - b.distance)
-        .slice(0, maxConnections)
-
-      distances.forEach(({ node: other, index: j }) => {
-        const edgeId = i < j ? `${i}-${j}` : `${j}-${i}`
-        if (!connections.has(edgeId)) {
-          connections.add(edgeId)
-
-          const edge = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-          edge.setAttribute('class', 'network-edge')
-          edge.setAttribute('x1', node.x)
-          edge.setAttribute('y1', node.y)
-          edge.setAttribute('x2', other.x)
-          edge.setAttribute('y2', other.y)
-          edgesGroup.appendChild(edge)
-
-          edgeConnections.push({ node1: i, node2: j })
-        }
-      })
-    })
-
-    nodes.forEach((node, i) => {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-      circle.setAttribute('class', 'network-node')
-      circle.setAttribute('cx', node.x)
-      circle.setAttribute('cy', node.y)
-      circle.setAttribute('r', 8)
-      circle.setAttribute('style', `--node-index: ${i}`)
-      nodesGroup.appendChild(circle)
-    })
-
-    return edgeConnections
-  }
-
-  // Animation loop
-  useEffect(() => {
-    if (dimensions.width === 0 || dimensions.height === 0) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    const svg = svgRef.current
-    const edgesGroup = edgesGroupRef.current
-    const nodesGroup = nodesGroupRef.current
-
-    if (!svg || !edgesGroup || !nodesGroup) return
-
-    // Initialize nodes
-    nodesRef.current = generateNodes(dimensions.width, dimensions.height)
-    edgeConnectionsRef.current = createNetwork(
-      svg,
-      edgesGroup,
-      nodesGroup,
-      nodesRef.current,
-      dimensions.width,
-      dimensions.height
-    )
-
-    const updateNetwork = () => {
-      frameCountRef.current++
-      const nodes = nodesRef.current
-      const { width, height } = dimensions
-
-      // Update node positions
-      nodes.forEach(node => {
-        // Elastic bounce at edges with coefficient > 1 for bouncy effect
-        if (node.x <= 0 || node.x >= width) node.vx *= -1.15
-        if (node.y <= 0 || node.y >= height) node.vy *= -1.15
-
-        node.x = Math.max(0, Math.min(width, node.x + node.vx))
-        node.y = Math.max(0, Math.min(height, node.y + node.vy))
-
-        // Increased random drift for more motion
-        node.vx += (Math.random() - 0.5) * 0.05
-        node.vy += (Math.random() - 0.5) * 0.05
-
-        // Less damping for more sustained motion
-        node.vx *= 0.99
-        node.vy *= 0.99
-      })
-
-      // Update SVG elements
-      const nodeElements = nodesGroup.querySelectorAll('circle')
-      nodeElements.forEach((circle, i) => {
-        if (nodes[i]) {
-          circle.setAttribute('cx', nodes[i].x)
-          circle.setAttribute('cy', nodes[i].y)
-        }
-      })
-
-      // Recreate network every 30 frames
-      if (frameCountRef.current % 30 === 0) {
-        edgeConnectionsRef.current = createNetwork(
-          svg,
-          edgesGroup,
-          nodesGroup,
-          nodes,
-          width,
-          height
-        )
-      } else {
-        // Update edge positions
-        const edgeElements = edgesGroup.querySelectorAll('line')
-        edgeConnectionsRef.current.forEach((edge, index) => {
-          if (index < edgeElements.length && edge.node1 !== undefined && edge.node2 !== undefined) {
-            const line = edgeElements[index]
-            line.setAttribute('x1', nodes[edge.node1].x)
-            line.setAttribute('y1', nodes[edge.node1].y)
-            line.setAttribute('x2', nodes[edge.node2].x)
-            line.setAttribute('y2', nodes[edge.node2].y)
-          }
-        })
-      }
-
-      animationIdRef.current = requestAnimationFrame(updateNetwork)
-    }
-
-    updateNetwork()
-
-    return () => {
-      if (animationIdRef.current) {
-        cancelAnimationFrame(animationIdRef.current)
-      }
-    }
-  }, [dimensions])
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     return null
@@ -206,16 +205,10 @@ function NetworkBackground() {
 
   return (
     <div className="background-animation">
-      <svg
-        ref={svgRef}
-        className="network-svg"
-        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
-        width={dimensions.width}
-        height={dimensions.height}
-      >
-        <g ref={edgesGroupRef} className="network-edges"></g>
-        <g ref={nodesGroupRef} className="network-nodes"></g>
-      </svg>
+      <canvas
+        ref={canvasRef}
+        className="network-canvas"
+      />
     </div>
   )
 }
