@@ -46,7 +46,10 @@ function NetworkBackground() {
         y: Math.random() * height,
         id: i,
         vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8
+        vy: (Math.random() - 0.5) * 0.8,
+        opacity: Math.random(),
+        targetOpacity: Math.random() > 0.5 ? 1 : 0.3,
+        opacitySpeed: 0.005 + Math.random() * 0.01
       })
     }
 
@@ -153,6 +156,16 @@ function NetworkBackground() {
         // Less damping for more sustained motion
         node.vx *= 0.99
         node.vy *= 0.99
+
+        // Animate opacity - fade in/out
+        const opacityDiff = node.targetOpacity - node.opacity
+        if (Math.abs(opacityDiff) < 0.05) {
+          // Switch target when close to current target
+          node.targetOpacity = Math.random() > 0.5 ? 1 : 0.2
+        } else {
+          // Gradually move toward target opacity
+          node.opacity += opacityDiff * node.opacitySpeed
+        }
       })
 
       // Update SVG elements
@@ -161,6 +174,7 @@ function NetworkBackground() {
         if (nodes[i]) {
           circle.setAttribute('cx', nodes[i].x)
           circle.setAttribute('cy', nodes[i].y)
+          circle.setAttribute('opacity', nodes[i].opacity)
         }
       })
 
@@ -175,15 +189,20 @@ function NetworkBackground() {
           height
         )
       } else {
-        // Update edge positions
+        // Update edge positions and opacity
         const edgeElements = edgesGroup.querySelectorAll('line')
         edgeConnectionsRef.current.forEach((edge, index) => {
           if (index < edgeElements.length && edge.node1 !== undefined && edge.node2 !== undefined) {
             const line = edgeElements[index]
-            line.setAttribute('x1', nodes[edge.node1].x)
-            line.setAttribute('y1', nodes[edge.node1].y)
-            line.setAttribute('x2', nodes[edge.node2].x)
-            line.setAttribute('y2', nodes[edge.node2].y)
+            const node1 = nodes[edge.node1]
+            const node2 = nodes[edge.node2]
+            line.setAttribute('x1', node1.x)
+            line.setAttribute('y1', node1.y)
+            line.setAttribute('x2', node2.x)
+            line.setAttribute('y2', node2.y)
+            // Edge opacity is average of connected nodes
+            const edgeOpacity = (node1.opacity + node2.opacity) / 2
+            line.setAttribute('stroke-opacity', edgeOpacity * 0.3)
           }
         })
       }

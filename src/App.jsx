@@ -46,6 +46,14 @@ function App() {
                 >
                   hi@rdc.bio
                 </a>
+                <button
+                  className="button button-secondary"
+                  aria-label="Sign up for newsletter (coming soon)"
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                >
+                  Newsletter Signup (Coming Soon)
+                </button>
               </div>
             </div>
           </div>
