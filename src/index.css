@@ -133,14 +133,15 @@ button, .button {
 }
 
 .button-secondary {
-  background: transparent;
+  background: rgba(79, 70, 229, 0.15);
   color: var(--color-text-primary);
-  border: 2px solid var(--color-border);
+  border: 2px solid rgba(79, 70, 229, 0.4);
 }
 
 .button-secondary:hover {
   border-color: var(--color-accent-primary);
-  background: rgba(79, 70, 229, 0.1);
+  background: rgba(79, 70, 229, 0.25);
+  transform: translateY(-2px);
 }
 
 /* Links */
