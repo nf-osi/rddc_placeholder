@@ -29,9 +29,9 @@ function NetworkBackground() {
       'rgba(124, 58, 237, 0.9)',  // purple
     ]
 
-    const numNodes = 25
-    const connectionDistance = 200
-    const maxConnections = 5
+    const numNodes = 30
+    const connectionDistance = 250
+    const maxConnections = 4
 
     // Initialize nodes
     const initializeNodes = () => {
@@ -40,13 +40,20 @@ function NetworkBackground() {
         nodesRef.current.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6,
+          baseX: 0, // Will be set to initial x
+          baseY: 0, // Will be set to initial y
+          vx: 0,
+          vy: 0,
           color: colors[Math.floor(Math.random() * colors.length)],
           size: Math.random() * 2 + 2.5,
           pulseOffset: Math.random() * Math.PI * 2,
         })
       }
+      // Store base positions
+      nodesRef.current.forEach(node => {
+        node.baseX = node.x
+        node.baseY = node.y
+      })
     }
 
     // Setup canvas with device pixel ratio for crisp rendering
@@ -77,35 +84,27 @@ function NetworkBackground() {
 
     // Animation loop
     const animate = () => {
-      // Clear with slight trail effect for smooth motion blur
-      ctx.fillStyle = 'rgba(10, 14, 26, 0.15)'
+      // Clear canvas - less trail for more structured look
+      ctx.fillStyle = 'rgba(10, 14, 26, 0.4)'
       ctx.fillRect(0, 0, width, height)
 
       timeRef.current += 0.008
 
       const nodes = nodesRef.current
 
-      // Update node positions with flowing motion
+      // Update node positions with gentle floating motion
       nodes.forEach((node, i) => {
-        // Add perlin-like noise for organic movement
-        const angle = Math.sin(node.x * 0.008 + timeRef.current) *
-                     Math.cos(node.y * 0.008 + timeRef.current) * Math.PI
-        node.vx += Math.cos(angle) * 0.015
-        node.vy += Math.sin(angle) * 0.015
+        // Gentle floating around base position
+        const floatX = Math.sin(timeRef.current * 0.5 + i) * 15
+        const floatY = Math.cos(timeRef.current * 0.3 + i) * 15
 
-        // Damping for smooth deceleration
-        node.vx *= 0.985
-        node.vy *= 0.985
+        // Target position is base + gentle float
+        const targetX = node.baseX + floatX
+        const targetY = node.baseY + floatY
 
-        // Update position
-        node.x += node.vx
-        node.y += node.vy
-
-        // Smooth edge wrapping
-        if (node.x < -20) node.x = width + 20
-        if (node.x > width + 20) node.x = -20
-        if (node.y < -20) node.y = height + 20
-        if (node.y > height + 20) node.y = -20
+        // Smooth interpolation to target
+        node.x += (targetX - node.x) * 0.05
+        node.y += (targetY - node.y) * 0.05
 
         // Calculate pulse for subtle breathing effect
         node.pulse = (Math.sin(timeRef.current * 1.5 + node.pulseOffset) + 1) / 2
