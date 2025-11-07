@@ -35,7 +35,6 @@ function NetworkBackground() {
 
     const numNodes = 120
     const connectionDistance = 250
-    const maxConnections = 16
 
     // Initialize nodes
     const initializeNodes = () => {
@@ -49,9 +48,10 @@ function NetworkBackground() {
           vx: 0,
           vy: 0,
           color: colors[Math.floor(Math.random() * colors.length)],
-          size: Math.random() * 2 + 2.5,
+          size: Math.random() * 1.6 + 2,
           pulseOffset: Math.random() * Math.PI * 2,
           flash: 0, // Flash intensity for particle collision effect
+          maxConnections: Math.floor(6 + Math.random() * 11), // Random 6-16 connections per node
         })
       }
       // Store base positions
@@ -129,7 +129,7 @@ function NetworkBackground() {
         let connectionCount = 0
 
         nodes.slice(i + 1).forEach((node2, j) => {
-          if (connectionCount >= maxConnections) return
+          if (connectionCount >= node1.maxConnections) return
 
           const dx = node1.x - node2.x
           const dy = node1.y - node2.y
@@ -251,42 +251,42 @@ function NetworkBackground() {
         const y = node1.y + (node2.y - node1.y) * particle.segmentProgress
 
         // Outer glow
-        const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, 8)
+        const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, 6.4)
         outerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.6)')
         outerGlow.addColorStop(0.4, 'rgba(200, 220, 255, 0.3)')
         outerGlow.addColorStop(1, 'rgba(255, 255, 255, 0)')
 
         ctx.fillStyle = outerGlow
         ctx.beginPath()
-        ctx.arc(x, y, 8, 0, Math.PI * 2)
+        ctx.arc(x, y, 6.4, 0, Math.PI * 2)
         ctx.fill()
 
         // Middle ring
-        const middleRing = ctx.createRadialGradient(x, y, 0, x, y, 4)
+        const middleRing = ctx.createRadialGradient(x, y, 0, x, y, 3.2)
         middleRing.addColorStop(0, 'rgba(255, 255, 255, 0.9)')
         middleRing.addColorStop(0.6, 'rgba(220, 235, 255, 0.6)')
         middleRing.addColorStop(1, 'rgba(255, 255, 255, 0.2)')
 
         ctx.fillStyle = middleRing
         ctx.beginPath()
-        ctx.arc(x, y, 4, 0, Math.PI * 2)
+        ctx.arc(x, y, 3.2, 0, Math.PI * 2)
         ctx.fill()
 
         // Core with slight gradient
-        const coreGradient = ctx.createRadialGradient(x, y, 0, x, y, 2.5)
+        const coreGradient = ctx.createRadialGradient(x, y, 0, x, y, 2)
         coreGradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
         coreGradient.addColorStop(0.7, 'rgba(240, 248, 255, 1)')
         coreGradient.addColorStop(1, 'rgba(220, 235, 255, 0.9)')
 
         ctx.fillStyle = coreGradient
         ctx.beginPath()
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2)
+        ctx.arc(x, y, 2, 0, Math.PI * 2)
         ctx.fill()
 
         // Inner bright highlight
         ctx.fillStyle = 'rgba(255, 255, 255, 1)'
         ctx.beginPath()
-        ctx.arc(x - 0.5, y - 0.5, 1, 0, Math.PI * 2)
+        ctx.arc(x - 0.4, y - 0.4, 0.8, 0, Math.PI * 2)
         ctx.fill()
       })
 

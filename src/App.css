@@ -82,6 +82,8 @@
   max-width: 750px;
   margin-left: 0;
   margin-right: auto;
+  transform: scale(0.8);
+  transform-origin: left center;
 }
 
 .hero-content {
@@ -317,6 +319,8 @@
 
   .hero-card {
     padding: var(--spacing-lg) var(--spacing-md);
+    transform: scale(1);
+    transform-origin: center;
   }
 
   .hero-actions {
