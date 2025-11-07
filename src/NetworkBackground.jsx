@@ -10,7 +10,6 @@ function NetworkBackground() {
   const edgeConnectionsRef = useRef([])
   const frameCountRef = useRef(0)
   const animationIdRef = useRef(null)
-  const lastNodeToggleRef = useRef(0)
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -42,17 +41,12 @@ function NetworkBackground() {
     const nodes = []
 
     for (let i = 0; i < numNodes; i++) {
-      const isVisible = Math.random() > 0.3
       nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
         id: i,
         vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        opacity: isVisible ? 1 : 0,
-        targetOpacity: isVisible ? 1 : 0,
-        isAppearing: false,
-        isDisappearing: false
+        vy: (Math.random() - 0.5) * 0.8
       })
     }
 
@@ -127,9 +121,8 @@ function NetworkBackground() {
 
     if (!svg || !edgesGroup || !nodesGroup) return
 
-    // Initialize nodes and timing
+    // Initialize nodes
     nodesRef.current = generateNodes(dimensions.width, dimensions.height)
-    lastNodeToggleRef.current = Date.now()
     edgeConnectionsRef.current = createNetwork(
       svg,
       edgesGroup,
@@ -143,31 +136,8 @@ function NetworkBackground() {
       frameCountRef.current++
       const nodes = nodesRef.current
       const { width, height } = dimensions
-      const currentTime = Date.now()
 
-      // Every 3 seconds, toggle a random node's visibility
-      if (currentTime - lastNodeToggleRef.current >= 3000) {
-        lastNodeToggleRef.current = currentTime
-
-        // Pick a random node
-        const randomIndex = Math.floor(Math.random() * nodes.length)
-        const node = nodes[randomIndex]
-
-        // Toggle between appearing and disappearing
-        if (node.opacity > 0.5) {
-          // Node is visible, make it disappear
-          node.isDisappearing = true
-          node.isAppearing = false
-          node.targetOpacity = 0
-        } else {
-          // Node is invisible, make it appear
-          node.isAppearing = true
-          node.isDisappearing = false
-          node.targetOpacity = 1
-        }
-      }
-
-      // Update node positions and opacity
+      // Update node positions
       nodes.forEach(node => {
         // Elastic bounce at edges with coefficient > 1 for bouncy effect
         if (node.x <= 0 || node.x >= width) node.vx *= -1.15
@@ -183,20 +153,6 @@ function NetworkBackground() {
         // Less damping for more sustained motion
         node.vx *= 0.99
         node.vy *= 0.99
-
-        // Animate opacity - smooth transition to target
-        if (node.isAppearing || node.isDisappearing) {
-          const opacityDiff = node.targetOpacity - node.opacity
-          if (Math.abs(opacityDiff) < 0.01) {
-            // Reached target
-            node.opacity = node.targetOpacity
-            node.isAppearing = false
-            node.isDisappearing = false
-          } else {
-            // Move toward target - faster animation (0.03 per frame for ~1 second transition at 60fps)
-            node.opacity += opacityDiff * 0.03
-          }
-        }
       })
 
       // Update SVG elements
@@ -205,7 +161,6 @@ function NetworkBackground() {
         if (nodes[i]) {
           circle.setAttribute('cx', nodes[i].x)
           circle.setAttribute('cy', nodes[i].y)
-          circle.setAttribute('opacity', nodes[i].opacity)
         }
       })
 
@@ -220,20 +175,15 @@ function NetworkBackground() {
           height
         )
       } else {
-        // Update edge positions and opacity
+        // Update edge positions
         const edgeElements = edgesGroup.querySelectorAll('line')
         edgeConnectionsRef.current.forEach((edge, index) => {
           if (index < edgeElements.length && edge.node1 !== undefined && edge.node2 !== undefined) {
             const line = edgeElements[index]
-            const node1 = nodes[edge.node1]
-            const node2 = nodes[edge.node2]
-            line.setAttribute('x1', node1.x)
-            line.setAttribute('y1', node1.y)
-            line.setAttribute('x2', node2.x)
-            line.setAttribute('y2', node2.y)
-            // Edge opacity is average of connected nodes
-            const edgeOpacity = (node1.opacity + node2.opacity) / 2
-            line.setAttribute('stroke-opacity', edgeOpacity * 0.3)
+            line.setAttribute('x1', nodes[edge.node1].x)
+            line.setAttribute('y1', nodes[edge.node1].y)
+            line.setAttribute('x2', nodes[edge.node2].x)
+            line.setAttribute('y2', nodes[edge.node2].y)
           }
         })
       }
