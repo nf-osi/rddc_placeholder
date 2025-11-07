@@ -19,26 +19,8 @@ function NetworkBackground() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Setup canvas with device pixel ratio for crisp rendering
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = canvas.offsetWidth * dpr
-      canvas.height = canvas.offsetHeight * dpr
-      ctx.scale(dpr, dpr)
-
-      // Reinitialize nodes on resize
-      if (nodesRef.current.length === 0 || Math.abs(canvas.offsetWidth - width) > 100) {
-        width = canvas.offsetWidth
-        height = canvas.offsetHeight
-        initializeNodes()
-      }
-    }
-
-    let width = canvas.offsetWidth
-    let height = canvas.offsetHeight
-
-    resize()
-    window.addEventListener('resize', resize)
+    let width = canvas.offsetWidth || window.innerWidth
+    let height = canvas.offsetHeight || window.innerHeight
 
     // Color palette - professional blue/purple gradient
     const colors = [
@@ -67,13 +49,34 @@ function NetworkBackground() {
       }
     }
 
-    initializeNodes()
+    // Setup canvas with device pixel ratio for crisp rendering
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1
+      const newWidth = canvas.offsetWidth || window.innerWidth
+      const newHeight = canvas.offsetHeight || window.innerHeight
+
+      canvas.width = newWidth * dpr
+      canvas.height = newHeight * dpr
+
+      // Reset transform and apply new scale
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
+      ctx.scale(dpr, dpr)
+
+      // Update dimensions
+      width = newWidth
+      height = newHeight
+
+      // Reinitialize nodes if significant size change
+      if (nodesRef.current.length === 0) {
+        initializeNodes()
+      }
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
 
     // Animation loop
     const animate = () => {
-      width = canvas.offsetWidth
-      height = canvas.offsetHeight
-
       // Clear with slight trail effect for smooth motion blur
       ctx.fillStyle = 'rgba(10, 14, 26, 0.15)'
       ctx.fillRect(0, 0, width, height)
