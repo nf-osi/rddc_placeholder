@@ -23,14 +23,14 @@ function NetworkBackground() {
     let width = canvas.offsetWidth || window.innerWidth
     let height = canvas.offsetHeight || window.innerHeight
 
-    // Color palette - professional blue/purple gradient
+    // Cohesive cool palette - steel/indigo field with occasional teal signal nodes
     const colors = [
-      'rgba(79, 70, 229, 0.9)',   // indigo
-      'rgba(99, 102, 241, 0.9)',  // lighter indigo
-      'rgba(124, 58, 237, 0.9)',  // purple
-      'rgba(168, 85, 247, 0.9)',  // lighter purple
-      'rgba(139, 92, 246, 0.9)',  // violet
-      'rgba(67, 56, 202, 0.9)',   // deeper indigo
+      'rgba(85, 102, 201, 0.9)',   // indigo
+      'rgba(96, 120, 196, 0.9)',   // steel blue
+      'rgba(120, 134, 214, 0.9)',  // periwinkle
+      'rgba(74, 92, 170, 0.9)',    // deep steel
+      'rgba(108, 156, 196, 0.9)',  // dusty blue
+      'rgba(79, 227, 193, 0.9)',   // teal signal (rare)
     ]
 
     const numNodes = 120
@@ -40,6 +40,9 @@ function NetworkBackground() {
     const initializeNodes = () => {
       nodesRef.current = []
       for (let i = 0; i < numNodes; i++) {
+        // Terminal (teal) nodes are the only valid start/end points for a
+        // signal. ~10% of nodes; the rest are steel/indigo waypoints.
+        const isTerminal = Math.random() < 0.1
         nodesRef.current.push({
           x: Math.random() * width,
           y: Math.random() * height,
@@ -47,8 +50,9 @@ function NetworkBackground() {
           baseY: 0, // Will be set to initial y
           vx: 0,
           vy: 0,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          size: Math.random() * 1.6 + 2,
+          terminal: isTerminal,
+          color: isTerminal ? colors[5] : colors[Math.floor(Math.random() * 5)],
+          size: isTerminal ? Math.random() * 1.2 + 3 : Math.random() * 1.6 + 2,
           pulseOffset: Math.random() * Math.PI * 2,
           flash: 0, // Flash intensity for particle collision effect
           maxConnections: Math.floor(6 + Math.random() * 11), // Random 6-16 connections per node
@@ -90,7 +94,7 @@ function NetworkBackground() {
     // Animation loop
     const animate = () => {
       // Clear canvas - less trail for more structured look
-      ctx.fillStyle = 'rgba(10, 14, 26, 0.4)'
+      ctx.fillStyle = 'rgba(5, 7, 14, 0.42)'
       ctx.fillRect(0, 0, width, height)
 
       timeRef.current += 0.008
@@ -170,20 +174,19 @@ function NetworkBackground() {
         adjacencyMap.get(conn.node2Index).push(conn.node1Index)
       })
 
-      // Generate a random path through the graph (at least 10 nodes)
-      const generatePath = (startIndex, minLength = 10) => {
+      // Wander semi-randomly from a start node until reaching a green
+      // (terminal) node, which ends the signal. Returns null if it never
+      // hits one within maxSteps.
+      const findSignalPath = (startIndex, maxSteps = 24) => {
         const path = [startIndex]
-        let current = startIndex
         const visited = new Set([startIndex])
+        let current = startIndex
 
-        while (path.length < minLength) {
+        while (path.length < maxSteps) {
           const neighbors = adjacencyMap.get(current) || []
-          // Filter out visited nodes, but allow revisiting if stuck
           let available = neighbors.filter(n => !visited.has(n))
-
           if (available.length === 0) {
-            // If stuck, allow any neighbor
-            available = neighbors
+            available = neighbors // allow revisiting if stuck
             if (available.length === 0) break
           }
 
@@ -191,25 +194,29 @@ function NetworkBackground() {
           path.push(next)
           visited.add(next)
           current = next
-        }
 
-        return path.length >= minLength ? path : null
+          if (nodes[next].terminal) return path // reached a green node — done
+        }
+        return null
       }
 
-      // Update and create particles (reduced spawn rate by 75% from original, max 10 particles)
+      // Spawn a signal from a non-terminal (blue/steel) node
       if (nodes.length > 0 && Math.random() < 0.0375 && particlesRef.current.length < 10) {
         const startNode = Math.floor(Math.random() * nodes.length)
-        const path = generatePath(startNode, 10)
 
-        if (path) {
-          particlesRef.current.push({
-            path: path,
-            segmentIndex: 0,
-            segmentProgress: 0,
-            speed: (0.01 + Math.random() * 0.0075) * 0.75, // Max speed reduced by 50%
-          })
-          // Flash the starting node
-          nodes[startNode].flash = 1
+        if (!nodes[startNode].terminal) {
+          const path = findSignalPath(startNode)
+
+          if (path) {
+            particlesRef.current.push({
+              path: path,
+              segmentIndex: 0,
+              segmentProgress: 0,
+              speed: (0.01 + Math.random() * 0.0075) * 0.75, // Max speed reduced by 50%
+            })
+            // Flash the originating node
+            nodes[startNode].flash = 1
+          }
         }
       }
 
@@ -250,22 +257,22 @@ function NetworkBackground() {
         const x = node1.x + (node2.x - node1.x) * particle.segmentProgress
         const y = node1.y + (node2.y - node1.y) * particle.segmentProgress
 
-        // Outer glow
-        const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, 6.4)
-        outerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.6)')
-        outerGlow.addColorStop(0.4, 'rgba(200, 220, 255, 0.3)')
-        outerGlow.addColorStop(1, 'rgba(255, 255, 255, 0)')
+        // Outer glow - teal signal halo
+        const outerGlow = ctx.createRadialGradient(x, y, 0, x, y, 7.5)
+        outerGlow.addColorStop(0, 'rgba(120, 240, 215, 0.55)')
+        outerGlow.addColorStop(0.4, 'rgba(79, 227, 193, 0.28)')
+        outerGlow.addColorStop(1, 'rgba(79, 227, 193, 0)')
 
         ctx.fillStyle = outerGlow
         ctx.beginPath()
-        ctx.arc(x, y, 6.4, 0, Math.PI * 2)
+        ctx.arc(x, y, 7.5, 0, Math.PI * 2)
         ctx.fill()
 
-        // Middle ring
+        // Middle ring - teal into white-hot
         const middleRing = ctx.createRadialGradient(x, y, 0, x, y, 3.2)
-        middleRing.addColorStop(0, 'rgba(255, 255, 255, 0.9)')
-        middleRing.addColorStop(0.6, 'rgba(220, 235, 255, 0.6)')
-        middleRing.addColorStop(1, 'rgba(255, 255, 255, 0.2)')
+        middleRing.addColorStop(0, 'rgba(235, 255, 250, 0.95)')
+        middleRing.addColorStop(0.6, 'rgba(150, 245, 222, 0.6)')
+        middleRing.addColorStop(1, 'rgba(79, 227, 193, 0.2)')
 
         ctx.fillStyle = middleRing
         ctx.beginPath()
